@@ -1,0 +1,65 @@
+OpenSSL Security Advisory [5 July 2022]
+=======================================
+
+Heap memory corruption with RSA private key operation (CVE-2022-2274)
+=====================================================================
+
+Severity: High
+
+The OpenSSL 3.0.4 release introduced a serious bug in the RSA
+implementation for X86_64 CPUs supporting the AVX512IFMA instructions.
+This issue makes the RSA implementation with 2048 bit private keys
+incorrect on such machines and memory corruption will happen during
+the computation. As a consequence of the memory corruption an attacker
+may be able to trigger a remote code execution on the machine performing
+the computation.
+
+SSL/TLS servers or other servers using 2048 bit RSA private keys running
+on machines supporting AVX512IFMA instructions of the X86_64 architecture
+are affected by this issue.
+
+Note that on a vulnerable machine, proper testing of OpenSSL would fail and
+should be noticed before deployment.
+
+Users of the OpenSSL 3.0.4 version should upgrade to OpenSSL 3.0.5.
+
+OpenSSL 1.1.1 and 1.0.2 are not affected by this issue.
+
+This issue was reported to OpenSSL on 22nd June 2022 by Xi Ruoyao. The
+fix was developed by Xi Ruoyao.
+
+AES OCB fails to encrypt some bytes (CVE-2022-2097)
+===================================================
+
+Severity: MODERATE
+
+AES OCB mode for 32-bit x86 platforms using the AES-NI assembly optimised
+implementation will not encrypt the entirety of the data under some
+circumstances.  This could reveal sixteen bytes of data that was
+preexisting in the memory that wasn't written.  In the special case of
+"in place" encryption, sixteen bytes of the plaintext would be revealed.
+
+Since OpenSSL does not support OCB based cipher suites for TLS and DTLS,
+they are both unaffected.
+
+This issue affects versions 1.1.1 and 3.0.  It was addressed in the
+releases of 1.1.1q and 3.0.5 on the 5th July 2022.
+
+OpenSSL 1.1.1 users should upgrade to 1.1.1q
+OpenSSL 3.0 users should upgrade to 3.0.5
+
+This issue was reported to OpenSSL on the 15th June 2022 by Alex
+Chernyakhovsky from Google. The fix was developed by Alex Chernyakhovsky,
+David Benjamin and Alejandro Sedeño from Google.
+
+References
+==========
+
+URL for this Security Advisory:
+https://www.openssl.org/news/secadv/20220705.txt
+
+Note: the online version of the advisory may be updated with additional details
+over time.
+
+For details of OpenSSL severity classifications please see:
+https://www.openssl.org/policies/secpolicy.html
