@@ -1,0 +1,25 @@
+name: "Trigger openssl-library.org deployment"
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "secadv/**/**"
+      - "secjson/**/**"
+      - "newsflash.txt"
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Trigger deployment workflow"
+        run: |
+          gh workflow run deploy-openssl-library-org.yml
+          sleep 3
+          RUN_ID=$(gh run list -w deploy-openssl-library-org.yml -L 1 --json databaseId -q ".[0].databaseId")
+          gh run watch ${RUN_ID} --exit-status
+        env:
+          GH_REPO: "openssl/openssl-web"
+          GH_TOKEN: ${{ secrets.OPENSSL_MACHINE_TOKEN }}
