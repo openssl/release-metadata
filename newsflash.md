@@ -1,5 +1,10 @@
 | Date        | Title |
 | ----------- | ----- |
+| 03-Sep-2024 | [Security Advisory](/news/secadv/20240903.txt): one moderate severity fix. |
+| 03-Sep-2024 | OpenSSL 3.3.2 is now available, including bug and security fixes |
+| 03-Sep-2024 | OpenSSL 3.2.3 is now available, including bug and security fixes |
+| 03-Sep-2024 | OpenSSL 3.1.7 is now available, including bug and security fixes |
+| 03-Sep-2024 | OpenSSL 3.0.15 is now available, including bug and security fixes |
 | 27-Jun-2024 | [Security Advisory](/news/secadv/20240627.txt): one low severity fix. |
 | 04-Jun-2024 | OpenSSL 3.3.1 is now available, including bug and security fixes |
 | 04-Jun-2024 | OpenSSL 3.2.2 is now available, including bug and security fixes |
