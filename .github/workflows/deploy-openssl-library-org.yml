@@ -7,7 +7,7 @@ on:
     paths:
       - "secadv/**/**"
       - "secjson/**/**"
-      - "newsflash.txt"
+      - "newsflash.md"
   workflow_dispatch:
 
 jobs:
