@@ -1,5 +1,6 @@
 | Date        | Title |
 | ----------- | ----- |
+| 07-Oct-2024 | Beta 1 of OpenSSL 3.4 is now available: please download and test it |
 | 05-Sep-2024 | Alpha 1 of OpenSSL 3.4 is now available: please download and test it |
 | 03-Sep-2024 | [Security Advisory](/news/secadv/20240903.txt): one moderate severity fix. |
 | 03-Sep-2024 | OpenSSL 3.3.2 is now available, including bug and security fixes |
