@@ -42,12 +42,12 @@
         {
             "base":"fips",
             "cve":"CVE-2007-6755",
-            "text":"Only OpenSSL FIPS module shipped Dual EC DRBG, and it <a href=\"https://marc.info/?l=openssl-announce&amp;m=1387471198223\">was not affected</a>."
+            "text":"Only OpenSSL FIPS module shipped Dual EC DRBG, and it [was not affected](https://marc.info/?l=openssl-announce&m=138747119822324)."
         },
         {
             "base":"none",
             "cve":"CVE-2002-20001",
-            "text":"<a href=\"https://github.com/openssl/openssl/issues/17374\">We do not consider this to be a vulnerability in OpenSSL<a>."
+            "text":"[We do not consider this to be a vulnerability in OpenSSL](https://github.com/openssl/openssl/issues/17374)."
         }
 
     ]
