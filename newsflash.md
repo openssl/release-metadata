@@ -1,5 +1,6 @@
 | Date        | Title |
 | ----------- | ----- |
+| 20-Jan-2025 | [Security Advisory](/news/secadv/20250120.txt): one low severity fix. |
 | 22-Oct-2024 | Final version of OpenSSL 3.4.0 is now available: please download and upgrade! |
 | 16-Oct-2024 | [Security Advisory](/news/secadv/20241016.txt): one low severity fix. |
 | 07-Oct-2024 | Beta 1 of OpenSSL 3.4 is now available: please download and test it |
