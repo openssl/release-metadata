@@ -1,5 +1,11 @@
 | Date        | Title |
 | ----------- | ----- |
+| 11-Feb-2025 | [Security Advisory](/news/secadv/20250211.txt): one high severity fix |
+| 11-Feb-2025 | OpenSSL 3.4.1 is now available, including bug and security fixes |
+| 11-Feb-2025 | OpenSSL 3.3.3 is now available, including bug and security fixes |
+| 11-Feb-2025 | OpenSSL 3.2.4 is now available, including bug and security fixes |
+| 11-Feb-2025 | OpenSSL 3.1.8 is now available, including bug and security fixes |
+| 11-Feb-2025 | OpenSSL 3.0.16 is now available, including bug and security fixes |
 | 20-Jan-2025 | [Security Advisory](/news/secadv/20250120.txt): one low severity fix. |
 | 22-Oct-2024 | Final version of OpenSSL 3.4.0 is now available: please download and upgrade! |
 | 16-Oct-2024 | [Security Advisory](/news/secadv/20241016.txt): one low severity fix. |
