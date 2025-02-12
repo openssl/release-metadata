@@ -34,7 +34,7 @@ OpenSSL 3.4, 3.3 and 3.2 are vulnerable to this issue.
 
 OpenSSL 3.4 users should upgrade to OpenSSL 3.4.1.
 
-OpenSSL 3.3 users should upgrade to OpenSSL 3.3.2.
+OpenSSL 3.3 users should upgrade to OpenSSL 3.3.3.
 
 OpenSSL 3.2 users should upgrade to OpenSSL 3.2.4.
 
