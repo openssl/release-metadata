@@ -1,4 +1,4 @@
-OpenSSL Security Advisory [XXth May 2025]
+OpenSSL Security Advisory [22nd May 2025]
 =========================================
 
 The x509 application adds trusted use instead of rejected use (CVE-2025-4575)
@@ -37,7 +37,7 @@ OpenSSL 3.5 users should upgrade to OpenSSL 3.5.1 once it is released.
 Due to the low severity of this issue we are not issuing new releases of
 OpenSSL at this time. The fix will be included in the next release of 3.5
 branch, once it becomes available. The fix is also available in commit
-xxxxxxxx (for 3.5) in the OpenSSL git repository.
+e96d2244 (for 3.5) in the OpenSSL git repository.
 
 This issue was reported on 2nd May 2025 by Alexandr Sosedkin (Red Hat).
 The fix was developed by Tomáš Mráz.
@@ -46,7 +46,7 @@ General Advisory Notes
 ======================
 
 URL for this Security Advisory:
-https://openssl-library.org/news/secadv/202505xx-to-be-renamed.txt
+https://openssl-library.org/news/secadv/20250522.txt
 
 Note: the online version of the advisory may be updated with additional details
 over time.

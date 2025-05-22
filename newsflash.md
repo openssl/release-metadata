@@ -1,5 +1,6 @@
 | Date        | Title |
 | ----------- | ----- |
+| 22-May-2025 | [Security Advisory](/news/secadv/20250522.txt): one low severity fix. |
 | 11-Feb-2025 | [Security Advisory](/news/secadv/20250211.txt): one high severity fix |
 | 11-Feb-2025 | OpenSSL 3.4.1 is now available, including bug and security fixes |
 | 11-Feb-2025 | OpenSSL 3.3.3 is now available, including bug and security fixes |
