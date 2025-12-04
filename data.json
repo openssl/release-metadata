@@ -1,0 +1,42 @@
+{
+  "4.0" : {
+    "release": "Apr 2026",
+    "eol": "May 2027",
+    "lts": false
+  },
+  "3.6" : {
+    "release": "01 Oct 2025",
+    "eol": "01 Nov 2026",
+    "lts": false
+  },
+  "3.5" : {
+    "release": "08 Apr 2025",
+    "eol": "08 Apr 2030",
+    "lts": true
+  },
+  "3.4" : {
+    "release": "22 Oct 2024",
+    "eol": "22 Oct 2026",
+    "lts": false
+  },
+  "3.3" : {
+    "release": "09 Apr 2024",
+    "eol": "09 Apr 2026",
+    "lts": false
+  },
+  "3.2" : {
+    "release": "23 Nov 2023",
+    "eol": "23 Nov 2025",
+    "lts": false
+  },
+  "3.1" : {
+    "release": "14 Mar 2023",
+    "eol": "14 Mar 2025",
+    "lts": false
+  },
+  "3.0" : {
+    "release": "07 Sep 2021",
+    "eol": "07 Sep 2026",
+    "lts": true
+  }
+}
