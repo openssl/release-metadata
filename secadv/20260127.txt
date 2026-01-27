@@ -486,5 +486,8 @@ https://openssl-library.org/news/secadv/20260127.txt
 Note: the online version of the advisory may be updated with additional details
 over time.
 
+Only currently supported releases have been analysed. OpenSSL 3.1 and 3.2 are
+out of support and have not been analysed.
+
 For details of OpenSSL severity classifications please see:
 https://openssl-library.org/policies/general/security-policy/
