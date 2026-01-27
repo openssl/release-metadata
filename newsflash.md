@@ -1,3 +1,5 @@
+This file is obsolete. It is kept here just for the history of news entries.
+
 | Date        | Title |
 | ----------- | ----- |
 | 22-May-2025 | [Security Advisory](/news/secadv/20250522.txt): one low severity fix. |
