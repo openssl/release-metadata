@@ -477,6 +477,106 @@ OpenSSL 1.0.2 users should upgrade to OpenSSL 1.0.2zn
 This issue was reported on 21st December 2025 by Luigino Camastra (Aisle Research).
 The fix was developed by Luigino Camastra (Aisle Research).
 
+Missing ASN1_TYPE validation in PKCS#12 parsing (CVE-2026-22795)
+================================================================
+
+Severity: Low
+
+Issue summary: An invalid or NULL pointer dereference can happen in
+an application processing a malformed PKCS#12 file.
+
+Impact summary: An application processing a malformed PKCS#12 file can be
+caused to dereference an invalid or NULL pointer on memory read, resulting
+in a Denial of Service.
+
+A type confusion vulnerability exists in PKCS#12 parsing code where
+an ASN1_TYPE union member is accessed without first validating the type,
+causing an invalid pointer read.
+
+The location is constrained to a 1-byte address space, meaning any
+attempted pointer manipulation can only target addresses between 0x00 and 0xFF.
+This range corresponds to the zero page, which is unmapped on most modern
+operating systems and will reliably result in a crash, leading only to a
+Denial of Service. Exploiting this issue also requires a user or application
+to process a maliciously crafted PKCS#12 file. It is uncommon to accept
+untrusted PKCS#12 files in applications as they are usually used to store
+private keys which are trusted by definition. For these reasons, the issue
+was assessed as Low severity.
+
+The FIPS modules in 3.5, 3.4, 3.3 and 3.0 are not affected by this issue,
+as the PKCS12 implementation is outside the OpenSSL FIPS module boundary.
+
+OpenSSL 3.6, 3.5, 3.4, 3.3, 3.0 and 1.1.1 are vulnerable to this issue.
+
+OpenSSL 1.0.2 is not affected by this issue.
+
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.1.
+
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.5.
+
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.4.
+
+OpenSSL 3.3 users should upgrade to OpenSSL 3.3.6.
+
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.19.
+
+OpenSSL 1.1.1 users should upgrade to OpenSSL 1.1.1ze.
+(premium support customers only).
+
+This issue was reported on 8th January 2026 by Luigino Camastra (Aisle Research).
+The fix was developed by Bob Beck.
+
+ASN1_TYPE Type Confusion in the PKCS7_digest_from_attributes() function (CVE-2026-22796)
+========================================================================================
+
+Severity: Low
+
+Issue summary: A type confusion vulnerability exists in the signature
+verification of signed PKCS#7 data where an ASN1_TYPE union member is
+accessed without first validating the type, causing an invalid or NULL
+pointer dereference when processing malformed PKCS#7 data.
+
+Impact summary: An application performing signature verification of PKCS#7
+data or calling directly the PKCS7_digest_from_attributes() function can be
+caused to dereference an invalid or NULL pointer when reading, resulting in
+a Denial of Service.
+
+The function PKCS7_digest_from_attributes() accesses the message digest attribute
+value without validating its type. When the type is not V_ASN1_OCTET_STRING,
+this results in accessing invalid memory through the ASN1_TYPE union, causing
+a crash.
+
+Exploiting this vulnerability requires an attacker to provide a malformed
+signed PKCS#7 to an application that verifies it. The impact of the
+exploit is just a Denial of Service, the PKCS7 API is legacy and applications
+should be using the CMS API instead. For these reasons the issue was
+assessed as Low severity.
+
+The FIPS modules in 3.5, 3.4, 3.3 and 3.0 are not affected by this issue,
+as the PKCS#7 parsing implementation is outside the OpenSSL FIPS module
+boundary.
+
+OpenSSL 3.6, 3.5, 3.4, 3.3, 3.0, 1.1.1 and 1.0.2 are vulnerable to this issue.
+
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.1.
+
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.5.
+
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.4.
+
+OpenSSL 3.3 users should upgrade to OpenSSL 3.3.6.
+
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.19.
+
+OpenSSL 1.1.1 users should upgrade to OpenSSL 1.1.1ze.
+(premium support customers only).
+
+OpenSSL 1.0.2 users should upgrade to OpenSSL 1.0.2zn.
+(premium support customers only).
+
+This issue was reported on 8th January 2026 by Luigino Camastra (Aisle Research).
+The fix was developed by Bob Beck.
+
 General Advisory Notes
 ======================
 
