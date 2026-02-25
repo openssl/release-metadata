@@ -50,18 +50,18 @@ It was also independently reported on 14th October 2025 by Hamza
 (Metadust).
 The fix was developed by Tomas Mraz.
 
-Stack buffer overflow in CMS AuthEnvelopedData parsing (CVE-2025-15467)
-=======================================================================
+Stack buffer overflow in CMS (Auth)EnvelopedData parsing (CVE-2025-15467)
+=========================================================================
 
 Severity: High
 
-Issue summary: Parsing CMS AuthEnvelopedData message with maliciously
-crafted AEAD parameters can trigger a stack buffer overflow.
+Issue summary: Parsing CMS AuthEnvelopedData or EnvelopedData message with
+maliciously crafted AEAD parameters can trigger a stack buffer overflow.
 
 Impact summary: A stack buffer overflow may lead to a crash, causing Denial
 of Service, or potentially remote code execution.
 
-When parsing CMS AuthEnvelopedData structures that use AEAD ciphers such as
+When parsing CMS (Auth)EnvelopedData structures that use AEAD ciphers such as
 AES-GCM, the IV (Initialization Vector) encoded in the ASN.1 parameters is
 copied into a fixed-size stack buffer without verifying that its length fits
 the destination. An attacker can supply a crafted CMS message with an
@@ -69,7 +69,7 @@ oversized IV, causing a stack-based out-of-bounds write before any
 authentication or tag verification occurs.
 
 Applications and services that parse untrusted CMS or PKCS#7 content using
-AEAD ciphers (e.g., S/MIME AuthEnvelopedData with AES-GCM) are vulnerable.
+AEAD ciphers (e.g., S/MIME (Auth)EnvelopedData with AES-GCM) are vulnerable.
 Because the overflow occurs prior to authentication, no valid key material
 is required to trigger it. While exploitability to remote code execution
 depends on platform and toolchain mitigations, the stack-based write
@@ -95,6 +95,8 @@ OpenSSL 3.0 users should upgrade to OpenSSL 3.0.19.
 
 This issue was reported on 14th December 2025 by Stanislav Fort (Aisle
 Research). The fix was developed by Igor Ustinov.
+Jan Lübbe (Pengutronix) reported that CMS EnvelopedData message parsing is
+also affected on 10th February 2026.
 
 NULL dereference in SSL_CIPHER_find() function on unknown cipher ID (CVE-2025-15468)
 ====================================================================================
