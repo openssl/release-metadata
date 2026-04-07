@@ -210,7 +210,7 @@ Applications and services that call CMS_decrypt() on untrusted input
 The FIPS modules in 3.6, 3.5, 3.4, 3.3 and 3.0 are not affected by this
 issue, as the affected code is outside the OpenSSL FIPS module boundary.
 
-OpenSSL 3.6, 3.5, 3.4, 3.3, 3.0,  1.1.1 and 1.0.2 are vulnerable to this issue.
+OpenSSL 3.6, 3.5, 3.4, 3.3, 3.0, 1.1.1 and 1.0.2 are vulnerable to this issue.
 
 OpenSSL 3.6 users should upgrade to OpenSSL 3.6.2.
 
