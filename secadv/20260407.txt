@@ -1,6 +1,54 @@
 OpenSSL Security Advisory [7th April 2026]
 ==========================================
 
+Incorrect Failure Handling in RSA KEM RSASVE Encapsulation (CVE-2026-31790)
+===========================================================================
+
+Severity: Moderate
+
+Issue summary: Applications using RSASVE key encapsulation to establish
+a secret encryption key can send contents of an uninitialized memory buffer to
+a malicious peer.
+
+Impact summary: The uninitialized buffer might contain sensitive data from the
+previous execution of the application process which leads to sensitive data
+leakage to an attacker.
+
+RSA_public_encrypt() returns the number of bytes written on success and -1
+on error. The affected code tests only whether the return value is non-zero.
+As a result, if RSA encryption fails, encapsulation can still return success to
+the caller, set the output lengths, and leave the caller to use the contents of
+the ciphertext buffer as if a valid KEM ciphertext had been produced.
+
+If applications use EVP_PKEY_encapsulate() with RSA/RSASVE on an
+attacker-supplied invalid RSA public key without first validating that key,
+then this may cause stale or uninitialized contents of the caller-provided
+ciphertext buffer to be disclosed to the attacker in place of the KEM
+ciphertext.
+
+As a workaround calling EVP_PKEY_public_check() or
+EVP_PKEY_public_check_quick() before EVP_PKEY_encapsulate() will mitigate
+the issue.
+
+The FIPS modules in 3.6, 3.5, 3.4, 3.3, 3.1 and 3.0 are affected by this issue.
+
+OpenSSL 1.0.2 and 1.1.1 are not affected by this issue.
+
+OpenSSL 3.6, 3.5, 3.4, 3.3, 3.0 are vulnerable to this issue.
+
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.20.
+
+OpenSSL 3.3 users should upgrade to OpenSSL 3.3.7.
+
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.5.
+
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.6.
+
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.2.
+
+This issue was reported by Simo Sorce (Red Hat) on 23rd Feburary 2026.
+The fix was developed by Nikola Pajkovsky.
+
 Out-of-bounds Read in AES-CFB-128 on X86-64 with AVX-512 Support (CVE-2026-28386)
 =================================================================================
 
@@ -279,54 +327,6 @@ OpenSSL 3.0 users should upgrade to OpenSSL 3.0.20.
 
 This issue was reported on 16th February 2026 by Quoc Tran (Xint.io - US Team).
 The fix was developed by Igor Ustinov.
-
-Incorrect Failure Handling in RSA KEM RSASVE Encapsulation (CVE-2026-31790)
-===========================================================================
-
-Severity: Moderate
-
-Issue summary: Applications using RSASVE key encapsulation to establish
-a secret encryption key can send contents of an uninitialized memory buffer to
-a malicious peer.
-
-Impact summary: The uninitialized buffer might contain sensitive data from the
-previous execution of the application process which leads to sensitive data
-leakage to an attacker.
-
-RSA_public_encrypt() returns the number of bytes written on success and -1
-on error. The affected code tests only whether the return value is non-zero.
-As a result, if RSA encryption fails, encapsulation can still return success to
-the caller, set the output lengths, and leave the caller to use the contents of
-the ciphertext buffer as if a valid KEM ciphertext had been produced.
-
-If applications use EVP_PKEY_encapsulate() with RSA/RSASVE on an
-attacker-supplied invalid RSA public key without first validating that key,
-then this may cause stale or uninitialized contents of the caller-provided
-ciphertext buffer to be disclosed to the attacker in place of the KEM
-ciphertext.
-
-As a workaround calling EVP_PKEY_public_check() or
-EVP_PKEY_public_check_quick() before EVP_PKEY_encapsulate() will mitigate
-the issue.
-
-The FIPS modules in 3.6, 3.5, 3.4, 3.3, 3.1 and 3.0 are affected by this issue.
-
-OpenSSL 1.0.2 and 1.1.1 are not affected by this issue.
-
-OpenSSL 3.6, 3.5, 3.4, 3.3, 3.0 are vulnerable to this issue.
-
-OpenSSL 3.0 users should upgrade to OpenSSL 3.0.20.
-
-OpenSSL 3.3 users should upgrade to OpenSSL 3.3.7.
-
-OpenSSL 3.4 users should upgrade to OpenSSL 3.4.5.
-
-OpenSSL 3.5 users should upgrade to OpenSSL 3.5.6.
-
-OpenSSL 3.6 users should upgrade to OpenSSL 3.6.2.
-
-This issue was reported by Simo Sorce (Red Hat) on 23rd Feburary 2026.
-The fix was developed by Nikola Pajkovsky.
 
 General Advisory Notes
 ======================
