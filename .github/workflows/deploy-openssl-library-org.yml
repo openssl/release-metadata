@@ -8,6 +8,7 @@ on:
       - "secadv/**/**"
       - "secjson/**/**"
       - "newsflash.md"
+      - "data.json"
   workflow_dispatch:
 
 jobs:
