@@ -233,7 +233,7 @@ This issue was reported on 13th February 2026 by Nathan Sportsman
 by Jaeho Nam (Seoul National University), on 26th March 2026 by
 Muhammad Daffa, on 27th March 2026 by Zhanpeng Liu (Tencent Xuanwu Lab),
 Guannan Wang (Tencent Xuanwu Lab) and Guancheng Li (Tencent Xuanwu Lab)
-and on 30th March 2026 by Joshua Rogers.
+and on 30th March 2026 by Joshua Rogers (Aisle Research).
 The fix was developed by Neil Horman.
 
 Possible NULL Dereference When Processing CMS KeyTransportRecipientInfo (CVE-2026-28390)
@@ -281,8 +281,8 @@ OpenSSL 1.0.2 users should upgrade to OpenSSL 1.0.2zp.
 This issue was reported on 26th March 2026 by Muhammad Daffa, on 27th March
 2026 by Zhanpeng Liu (Tencent Xuanwu Lab), Guannan Wang (Tencent Xuanwu Lab)
 and Guancheng Li (Tencent Xuanwu Lab), on 30th March 2026 by Joshua
-Rogers and on 31st March 2026 by Chanho Kim. The fix was developed by
-Neil Horman.
+Rogers (Aisle Research) and on 31st March 2026 by Chanho Kim. The fix was
+developed by Neil Horman.
 
 Heap Buffer Overflow in Hexadecimal Conversion (CVE-2026-31789)
 ===============================================================
