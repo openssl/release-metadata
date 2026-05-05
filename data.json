@@ -1,6 +1,21 @@
 {
+  "5.0" : {
+    "release": "Oct 2027",
+    "eol": "Nov 2028",
+    "lts": false
+  },
+  "4.2" : {
+    "release": "Apr 2027",
+    "eol": "Apr 2032",
+    "lts": true
+  },
+  "4.1" : {
+    "release": "Oct 2026",
+    "eol": "Nov 2027",
+    "lts": false
+  },
   "4.0" : {
-    "release": "Apr 2026",
+    "release": "14 Apr 2026",
     "eol": "14 May 2027",
     "lts": false
   },
