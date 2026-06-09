@@ -1,0 +1,867 @@
+OpenSSL Security Advisory [9th June 2026]
+=========================================
+
+Heap Use-After-Free in the PKCS7_verify() Function (CVE-2026-45447)
+===================================================================
+
+Severity: High
+
+Issue summary: A specially crafted PKCS#7 or S/MIME signed message could
+trigger a use-after-free during PKCS#7 signature verification.
+
+Impact summary: A use-after-free may result in process crashes, heap
+corruption, or potentially remote code execution.
+
+When processing a PKCS#7 or S/MIME signed message, if the SignedData
+digestAlgorithms field is present as an empty ASN.1 SET, OpenSSL may
+incorrectly free a caller-owned BIO during PKCS7_verify(). A subsequent
+use of the BIO by the calling application results in a use-after-free
+condition.
+
+In the common case this occurs when the application later calls
+BIO_free() on the BIO originally passed to PKCS7_verify(). Depending
+on allocator behavior and application-specific BIO usage patterns, this
+may result in a crash or other memory corruption. In some application
+contexts this may potentially be exploitable for remote code execution.
+
+Applications that process PKCS#7 or S/MIME signed messages using OpenSSL
+PKCS#7 APIs may be affected. Applications using the CMS APIs for this
+processing are not affected.
+
+The FIPS modules in 4.0, 3.6, 3.5, 3.4, and 3.0 are not affected by this
+issue, as the affected code is outside the OpenSSL FIPS module boundary.
+
+OpenSSL 4.0, 3.6, 3.5, 3.4, 3.0, 1.1.1, and 1.0.2 are vulnerable to this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.21.
+OpenSSL 1.1.1 users should upgrade to OpenSSL 1.1.1zh
+(premium support customers only).
+OpenSSL 1.0.2 users should upgrade to OpenSSL 1.0.2zq
+(premium support customers only).
+
+This issue was reported by Thai Duong (Calif.io in
+collaboration with Claude and Anthropic Research).
+on 27th April 2026. The fix was developed by Igor Ustinov.
+
+CMS AuthEnvelopedData Processing May Accept Forged Messages (CVE-2026-34182)
+============================================================================
+
+Severity: Moderate
+
+Issue Summary: Cryptographic Message Services (CMS) processing fails to perform
+sufficient input validation on the cipher and tag length fields of
+AuthEnvelopedData containers, leading to various potential compromises.
+
+Impact Summary: Attackers making use of these vulnerabilities may achieve
+key-equivalent functionality for a given CMS recipient and/or bypass integrity
+validation for a given message.
+
+In one use case, an attacker may send a CMS message containing
+AuthEnvelopedData with the cipher specified as a non-AEAD cipher.  OpenSSL
+erroneously allows this selection, and attempts to decrypt and validate the
+message.
+
+An on-path attacker who captures one legitimate AES-GCM AuthEnvelopedData
+addressed to the victim can re-emit it with the recipientInfos set left
+byte-for-byte intact, so the victim's private key still unwraps the genuine CEK
+(the content-encryption key), but with the inner OID rewritten to AES-256-OFB
+(Output Feedback Mode, an unauthenticated keystream mode) and with an
+attacker-chosen IV and ciphertext. The victim initializes AES-256-OFB under the
+real CEK, never consults the MAC field, and CMS_decrypt() returns success.
+
+If the application under attack responds to the attacker with any indicator
+showing success or failure of the decryption effort, it is possible for the
+attacker to use this as an oracle to obtain key equivalent functionality for the
+CEK used for the chosen recipient of the message.
+
+In another use case, an attacker can reduce the tag length of the chosen AEAD
+cipher for a given AuthEnvelopedData container to be a single byte long,
+allowing an attacker to brute force CMS decryption, producing an integrity
+bypass for applications that trust CMS_decrypt() to reject modified content.
+
+The FIPS modules are not affected by this issue.
+
+OpenSSL 4.0, 3.6, 3.5, 3.4, and 3.0 are vulnerable to this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.21.
+
+OpenSSL 1.1.1 and 1.0.2 are not affected by this issue.
+
+This issue was reported on 12th March 2026 by Asim Viladi Oglu Manizada,
+on 17th April 2026 by Alex Gaynor (Anthropic), on 27th May 2026 by Ying
+Dong, and on 28th May 2026 by Haiyang Huang.
+
+The fix has been developed by Neil Horman.
+
+Unbounded Memory Growth in the QUIC PATH_CHALLENGE Handler (CVE-2026-34183)
+===========================================================================
+
+Severity: Moderate
+
+Issue summary: Remote peer may exhaust heap memory of the QUIC
+server or client by flooding it with packets containing PATH_CHALLENGE
+frames.
+
+Impact summary: A malicious remote peer can cause an unbounded
+memory allocation which can lead to an abnormal termination of the
+application acting as a QUIC client or server and a Denial of Service.
+
+A remote peer may exhaust heap memory by flooding the local
+QUIC stack with PATH_CHALLENGE frames. The local QUIC stack
+allocates a PATH_RESPONSE frame for every PATH_CHALLENGE it receives.
+The allocated PATH_RESPONSE frame gets freed only when the remote
+peer acknowledges reception of the PATH_RESPONSE frame which will
+not be done by a malicious peer.
+
+The FIPS modules in 4.0, 3.6, 3.5, 3.4, and 3.0 are not affected by
+this issue. The QUIC stack is outside of OpenSSL FIPS module
+boundary.
+
+OpenSSL 3.4, 3.5, 3.6 and 4.0 are vulnerable to this issue.
+
+OpenSSL 3.0, 1.1.1 and 1.0.2 are not affected by this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6
+
+The issue was reported by Abhinav Agarwal on 18th March 2026.
+
+Fix suggested by Abhinav Agarwal, adapted by Alexandr Nedvedicky.
+
+Double-free When Checking OCSP Stapled Response (CVE-2026-35188)
+================================================================
+
+Severity: Moderate
+
+Issue summary: A malicious server can exploit TLS OCSP stapling by delivering
+a crafted response through the status_request extension, triggering a
+double-free in the client's certificate verification path.
+
+Impact summary: Successful exploitation allows an attacker to corrupt heap
+memory via a double-free, potentially leading to a Denial of Service or
+possibly an attacker controlled code execution or other undefined behavior.
+
+If OCSP stapling is enabled and the TLS client connects to a malicious server,
+a crafted OCSP stapled response can trigger a double free in the TLS client
+when the stapled response is checked.
+
+The OCSP stapling is not enabled by default. Reliable code execution
+through a double-free is technically complex and highly environment-dependent
+but the Denial of Service impact is straightforward to achieve, warranting
+Moderate severity.
+
+No FIPS modules are affected by this issue as the affected code is outside
+the OpenSSL FIPS module boundary.
+
+OpenSSL 4.0 and 3.6 are vulnerable to this issue.
+
+OpenSSL 3.5, 3.4, 3.0, 1.1.1, and 1.0.2 are not affected by this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+
+This issue was reported by Wang Kenaz (University of Illinois) on 17th March
+2026. It was independently reported by Guido Vranken (Aisle Research) on 26th
+March 2026 and by Aaron Grattafiori (Nvidia) on 30th March 2026.
+
+The fix was developed by Daniel Kubec.
+
+NULL Pointer Dereference in QUIC Server Initial Packet Handling (CVE-2026-42764)
+================================================================================
+
+Severity: Moderate
+
+Issue summary: Receiving a QUIC initial packet with an invalid token may
+trigger a NULL pointer dereference in the OpenSSL QUIC server with
+address validation disabled.
+
+Impact summary: NULL pointer dereference typically causes abnormal termination
+of the affected QUIC server process and a Denial of Service.
+
+If the address validation is disabled in the OpenSSL QUIC server
+implementation, an attacker can crash the server by sending an initial
+packet with an invalid or expired token.
+
+By default, the client address validation is enabled in the OpenSSL QUIC server
+implementation, which makes the default configuration not vulnerable
+to this issue. However if the SSL_LISTENER_FLAG_NO_VALIDATE is used with
+the SSL_new_listener() call, the address validation is disabled making the
+vulnerable code reachable.
+
+The FIPS modules in 4.0, 3.6, 3.5, 3.4, and 3.0 are not affected by this
+issue, as the affected code is outside the OpenSSL FIPS module boundary.
+
+OpenSSL 4.0, 3.6, and 3.5 are vulnerable to this issue.
+
+OpenSSL 3.4, 3.0, 1.1.1, and 1.0.2 are not affected by this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7
+
+This issue was reported and the fix submitted on 27th March 2026
+by Sunwoo Lee (KENTECH), Hyuk Lim (KENTECH) and Seunghyun Yoon (KENTECH).
+
+AES-OCB IV Ignored on EVP_Cipher() Path (CVE-2026-45445)
+========================================================
+
+Severity: Moderate
+
+Issue summary: When an application drives an AES-OCB context through the
+public EVP_Cipher() one-shot interface, the application-supplied
+initialisation vector (IV) is silently discarded.
+
+Impact summary: Every message encrypted under the same key uses the
+same effective nonce regardless of the IV supplied by the caller,
+resulting in (key, nonce) reuse and loss of confidentiality.  If the
+same code path is used to compute the authentication tag, the tag
+depends only on the (key, IV) pair and not on the plaintext or
+ciphertext, allowing universal forgery of arbitrary ciphertext from a
+single captured message.
+
+OpenSSL provides two ways to drive a cipher: the documented streaming
+interface (EVP_CipherUpdate / EVP_CipherFinal_ex) and a lower-level
+one-shot, EVP_Cipher(), whose documentation explicitly recommends
+against use by applications in favour of EVP_CipherUpdate() and
+EVP_CipherFinal_ex().  The OCB provider's streaming handler flushes
+the application-supplied IV into the OCB context before processing
+data; the one-shot handler did not.  Every call to EVP_Cipher() on an
+AES-OCB context therefore ran with the all-zero key-derived offset
+state left by cipher initialisation, regardless of the caller's IV.
+
+If EVP_EncryptFinal_ex() is subsequently used to obtain the
+authentication tag, the deferred IV setup runs at that point and
+clears the running checksum that should have been accumulated over the
+plaintext.  The resulting tag is a function of (key, IV) only and
+verifies against any ciphertext produced under the same (key, IV)
+pair.
+
+The OpenSSL SSL/TLS implementation is not affected: AES-OCB is not a
+TLS cipher suite, and libssl does not call EVP_Cipher() in any case.
+Applications that drive AES-OCB through the documented streaming AEAD
+API (EVP_CipherUpdate / EVP_CipherFinal_ex) are not affected.  Only
+applications that combine the AES-OCB cipher with the EVP_Cipher()
+one-shot API are vulnerable.
+
+The FIPS modules in 4.0, 3.6, 3.5, 3.4 and 3.0 are not affected by
+this issue, as AES-OCB is outside the OpenSSL FIPS module boundary.
+
+OpenSSL 4.0, 3.6, 3.5, 3.4 and 3.0 are vulnerable to this issue.
+
+OpenSSL 1.1.1 and 1.0.2 are not affected by this issue: in those
+releases the IV is applied synchronously during cipher initialisation
+and the AES-OCB one-shot rejects data submitted before the IV is set.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.21.
+
+This issue was reported on 16th April 2026 by Alex Gaynor (Anthropic).
+The fix was developed by Viktor Dukhovni.
+
+Possible Heap Buffer Overflow in ASN.1 Multibyte String Conversion (CVE-2026-7383)
+==================================================================================
+
+Severity: Low
+
+Issue summary: A signed integer overflow when sizing the destination
+buffer for Unicode output in ASN1_mbstring_ncopy() can lead to a heap
+buffer overflow.
+
+Impact summary: A heap buffer overflow may lead to a crash or possibly
+attacker controlled code execution or other undefined behaviour.
+
+In ASN1_mbstring_copy() and ASN1_mbstring_ncopy() the destination
+size for Unicode output is computed in a signed int: by left shift
+of the input character count for BMPSTRING (UTF-16) and
+UNIVERSALSTRING (UTF-32), and by summing per-character byte counts
+for UTF8STRING. The calculation overflows when the input reaches
+around 2^30 characters. In the worst case (UNIVERSALSTRING at 2^30
+characters) the size wraps to zero, OPENSSL_malloc(1) is called, and
+the subsequent character copy writes several gigabytes past the
+one-byte allocation.
+
+X.509 certificate processing routes through ASN1_STRING_set_by_NID(),
+whose DIRSTRING_TYPE mask excludes UNIVERSALSTRING and whose per-NID
+size limits cap the input length; no network protocol or
+certificate-handling path in OpenSSL exercises the overflow.
+Triggering the bug requires an application that calls
+ASN1_mbstring_copy() or ASN1_mbstring_ncopy() directly, or registers
+a custom string type via ASN1_STRING_TABLE_add(), with
+attacker-controlled input on the order of half a gigabyte or more.
+For these reasons this issue was assigned Low severity.
+
+The FIPS modules in 4.0, 3.6, 3.5, 3.4 and 3.0 are not affected by
+this issue, as the affected code is outside the OpenSSL FIPS module
+boundary.
+
+OpenSSL 4.0, 3.6, 3.5, 3.4, 3.0, 1.1.1 and 1.0.2 are vulnerable to
+this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.21.
+OpenSSL 1.1.1 users should upgrade to OpenSSL 1.1.1zh.
+(premium support customers only).
+OpenSSL 1.0.2 users should upgrade to OpenSSL 1.0.2zq.
+(premium support customers only).
+
+This issue was reported on 27th February 2026 by Zehua Qiao and Jinwen He.
+The fix was developed by Viktor Dukhovni.
+
+Out-of-Bounds Read in CMS Password-Based Decryption (CVE-2026-9076)
+===================================================================
+
+Severity: Low
+
+Issue summary: When CMS password-based decryption (RFC 3211 / PWRI key unwrap)
+processes attacker-supplied CMS data, an attacker-chosen stream-mode KEK
+cipher can trigger a heap out-of-bounds read in kek_unwrap_key().
+
+Impact summary: A heap buffer over-read may trigger a crash which leads to
+Denial of Service for an application if the input buffer ends at a memory
+page boundary and the following page is unmapped. There is no information
+disclosure as the over-read bytes are not revealed to the attacker.
+
+The key unwrapping function performs a check-byte test as specified in the
+RFC that reads 7 bytes from a heap allocation that is based on the wrapped
+key length from the message. There is a minimum length check based on the
+block length of the wrapping cipher. However the cipher is selected from
+an OID carried in the attacker's PWRI keyEncryptionAlgorithm with no
+requirement that the cipher be a block cipher. When an attacker selects
+a stream-mode cipher the guard will be ineffective and the allocated buffer
+containing the unwrapped key can be too small to fit the check-bytes
+specified in the RFC and a buffer over-read can happen.
+
+Applications calling CMS_decrypt() or CMS_decrypt_set1_password()
+(equivalently openssl cms -decrypt -pwri_password ...) on untrusted CMS
+data are vulnerable to this issue. No password knowledge is required: the
+over-read happens during the unwrap attempt before any authentication
+succeeds.
+
+The over-read is limited to a few bytes and is not written to output, so
+there is no information disclosure. Triggering a crash requires the
+allocation to border unmapped memory, which is unlikely with the normal
+allocator.
+
+The FIPS modules are not affected by this issue.
+
+OpenSSL 4.0, 3.6, 3.5, 3.4, 3.0, 1.1.1 and 1.0.2 are vulnerable to this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.21.
+OpenSSL 1.1.1 users should upgrade to OpenSSL 1.1.1zh
+(premium support customers only).
+OpenSSL 1.0.2 users should upgrade to OpenSSL 1.0.2zq
+(premium support customers only).
+
+This issue was reported on 16th May 2026 by Bhabani Sankar Das.
+It was independently reported on 20th May 2026 by Haruki Oyama
+(Waseda University).
+The fix was developed by Nikola Pajkovsky.
+
+Heap Buffer Over-read in ASN.1 Content Parsing (CVE-2026-34180)
+===============================================================
+
+Severity: Low
+
+Issue summary: Parsing a crafted DER-encoded ASN.1 structure with a primitive
+element whose content exceeds 2 gigabytes in length may cause a heap buffer
+over-read on 64-bit Unix and Unix-like platforms.
+
+Impact summary: The heap buffer over-read may crash the application (Denial of
+Service) or to load into the decoded ASN.1 object contents of memory beyond the
+end of the input buffer.  More typically such ASN.1 elements would instead be
+truncated.
+
+An integer truncation in OpenSSL's ASN.1 decoder causes the content length of
+an ASN.1 primitive element to be mishandled when it exceeds 2 gigabytes. In the
+worst case the truncated length is treated as a request to scan the binary
+content for a terminating zero byte, possibly causing OpenSSL to read either
+less than or beyond the end of the allocated buffer.
+
+Applications that pass attacker-supplied data to d2i_X509(), d2i_PKCS7(), or
+any other d2i_* decoding function are affected. OpenSSL's own command-line
+tools are not vulnerable, as data read through the BIO layer is checked before
+it reaches the affected code. The issue only affects 64-bit Unix and Unix-like
+platforms; 32-bit platforms and 64-bit Windows are not affected.
+
+The FIPS modules in 4.0, 3.6, 3.5, 3.4 and 3.0 are not affected by this issue,
+as the affected code is outside the OpenSSL FIPS module boundary.
+
+OpenSSL 4.0, 3.6, 3.5, 3.4, 3.0, 1.1.1 and 1.0.2 are vulnerable to this
+issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.21.
+OpenSSL 1.1.1 users should upgrade to OpenSSL 1.1.1zh
+(premium support customers only).
+OpenSSL 1.0.2 users should upgrade to OpenSSL 1.0.2zq
+(premium support customers only).
+
+This issue was reported on 30th January 2026 by Frank Buss.
+The fix was developed by Viktor Dukhovni.
+
+PKCS#12 Files with PBMAC1 Are Accepted with Short HMAC Keys (CVE-2026-34181)
+============================================================================
+
+Severity: Low
+
+Issue Summary: The PKCS#12 file processing fails to perform sufficient input
+validation for files that use Password-Based Message Authentication Code 1
+(PBMAC1) integrity mechanism allowing a certificate and private key forgery.
+
+Impact Summary: An attacker impersonating a user can cause a service reading
+PKCS#12 files to accept forged certificates and private keys with a 1 in 256
+probability.
+
+If a service accepting PKCS#12 files is using passwords for authenticating
+the received files, the attacker can create unencrypted PKCS#12 files that
+use PBMAC1 authentication that specifies an HMAC key of only one byte, allowing
+them to craft a file that will be accepted with a 1 in 256 probability.
+That would then cause the service to accept a certificate and private key
+controlled by the attacker.
+
+The FIPS modules are not affected by this issue, as the affected code is
+outside the OpenSSL FIPS module boundary..
+
+OpenSSL 4.0, 3.6, 3.5, and 3.4 are vulnerable to this issue.
+
+OpenSSL 3.0, 1.1.1 and 1.0.2 are not affected by this issue as they do
+not support PBMAC1 in PKCS#12.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+
+This issue was reported on 2nd March 2026 by Pavol Žáčik (Red Hat).
+This issue was also reported on 16th April 2026 by Alex Gaynor (Anthropic).
+
+The fix has been developed by Alicja Kario (Red Hat).
+
+NULL Dereference in Certificate Verification with OCSP Checking (CVE-2026-42765)
+================================================================================
+
+Severity: Low
+
+Issue summary: When a partial-chain certificate verification is enabled
+together with OCSP response checking for the whole chain, a NULL dereference
+will happen if the verified chain does not have a self-signed trusted anchor,
+crashing the process.
+
+Impact summary: A NULL pointer dereference can trigger a crash which leads to a
+Denial of Service for an application.
+
+When performing OCSP response checking for certificates in the verification
+chain, the code always tries to access the next certificate as the issuer.
+There is a check for a self-signed certificate. However with the partial
+chain verification enabled when the chain does not have a self-signed trusted
+anchor, the issuer will be NULL for the last certificate in the chain. A NULL
+pointer dereference then happens.
+
+This issue affects only applications which enable both OCSP verification
+of the certificate chain (X509_V_FLAG_OCSP_RESP_CHECK_ALL) and partial
+chain verification (X509_V_FLAG_PARTIAL_CHAIN) in the certificate
+verification. Both flags are disabled by default. For that reason, we have
+assigned Low severity to the issue.
+
+No FIPS modules are affected by this issue as the affected code is outside
+the OpenSSL FIPS module boundary.
+
+OpenSSL 4.0 and 3.6 are vulnerable to this issue.
+
+OpenSSL 3.5, 3.4, 3.0, 1.1.1, and 1.0.2 are not affected by this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+
+This issue was reported by Joshua Rogers (Aisle Research) on 30th March 2026.
+The fix was developed by Joshua Rogers (Aisle Research) and Daniel Kubec.
+
+Possible NULL Dereference in Password-Based CMS Decryption (CVE-2026-42766)
+===========================================================================
+
+Severity: Low
+
+Issue summary: A specially crafted password-encrypted CMS message
+can trigger a NULL pointer dereference during CMS decryption.
+
+Impact summary: This NULL pointer dereference leads to an application crash
+and a Denial of Service.
+
+The CMS PasswordRecipientInfo.keyDerivationAlgorithm field is defined as
+OPTIONAL in the ASN.1 specification and may therefore be absent in specially
+crafted inputs. During the password-based CMS decryption the OpenSSL
+CMS implementation dereferences this field without first checking whether it
+was present.
+
+An attacker who supplies such a CMS message to an application performing
+password-based CMS decryption can trigger an application crash, leading to
+a Denial of Service.
+
+Applications that process password-encrypted CMS messages may be affected.
+
+The FIPS modules in 4.0, 3.6, 3.5, 3.4, and 3.0 are not affected by this
+issue, as the affected code is outside the OpenSSL FIPS module boundary.
+
+OpenSSL 4.0, 3.6, 3.5, 3.4, 3.0, 1.1.1, and 1.0.2 are vulnerable to this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.21.
+OpenSSL 1.1.1 users should upgrade to OpenSSL 1.1.1zh
+(premium support customers only).
+OpenSSL 1.0.2 users should upgrade to OpenSSL 1.0.2zq
+(premium support customers only).
+
+This issue was reported by Mayank Jangid and Kushal Khemka on 20th April 2026,
+independently reported by Hari Priandana on 4th May 2026, by Bhabani Sankar Das
+on 15th May 2026, and by Qifan Zhang (Palo Alto Networks) on 18th May 2026.
+The fix was developed by Igor Ustinov.
+
+NULL Pointer Dereference in CRMF EncryptedValue Decryption (CVE-2026-42767)
+===========================================================================
+
+Severity: Low
+
+Issue summary: An attacker-controlled CMP (Certificate Management Protocol)
+server could trigger a NULL pointer dereference in a CMP client application.
+
+Impact summary: A NULL pointer dereference causes a crash of the
+application and a Denial of Service.
+
+An attacker controlling a CMP server (or acting as a man-in-the-middle) could
+craft a CMP response containing a CRMF (Certificate Request Message Format)
+CertRepMessage with an EncryptedValue structure where the symmAlg field
+has an algorithm OID but no parameters field. When the OpenSSL CMP client
+processes this response, the NULL dereference occurs, causing a crash of
+the CMP client.
+
+Applications that process untrusted CMP/CRMF messages may be affected.
+
+The FIPS modules in 4.0, 3.6, 3.5, 3.4, and 3.0 are not affected by this
+issue, as the affected code is outside the OpenSSL FIPS module boundary.
+
+OpenSSL 4.0, 3.6, 3.5, 3.4 and 3.0 are vulnerable to this issue.
+
+OpenSSL 1.0.2 and 1.1.1 are not affected by this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.21.
+
+This issue was reported by Zhanpeng Liu (Tencent Xuanwu Lab),
+Guannan Wang (Tencent Xuanwu Lab) and Guancheng Li (Tencent Xuanwu Lab)
+on 27th March 2026.
+
+The fix was developed by Igor Ustinov and Tomáš Mráz.
+
+Multi-RecipientInfo Bleichenbacher Oracle in CMS_decrypt() and PKCS7_decrypt() (CVE-2026-42768)
+===============================================================================================
+
+Severity: Low
+
+Issue summary: The CMS_decrypt and PKCS7_decrypt functions are vulnerable to
+Bleichenbacher-style attack when an attacker is able to provide the CMS or
+S/MIME messages and observe the error code and/or decryption output.
+
+Impact summary: The Bleichenbacher-style attack allows an attacker to use the
+victim's vulnerable application as a way to decrypt or sign messages with the
+victim's private RSA key.
+
+The attack is possible in 2 variants.
+
+1. The decryption API (CMS_decrypt(), PKCS7_decrypt()) is used without
+providing the recipient certificate. In this case OpenSSL iterates over every
+KeyTransRecipientInfo (KTRI) without stopping at the first success.
+
+An attacker who authors a message with two KTRI entries — the first one
+wrapping a real CEK under the victim's public key, the second with an
+arbitrary probe ciphertext — obtains opportunity to iterate the 2nd KTRI to
+get a valid PKCS#1 v1.5 padding if the error code of the application is
+available.
+
+That is a Bleichenbacher oracle (Bleichenbacher, CRYPTO '98): an
+adaptive-chosen-ciphertext side channel from which the attacker decrypts any
+RSA ciphertext to the victim's key or forges any PKCS#1 v1.5 signature under
+it.
+
+2. When the decryption API (CMS_decrypt(), PKCS7_decrypt()) is provided with
+the recipient certificate, and the recipient is not found, a random
+key is substituted.
+
+An attacker who authors a message and is able to compare both error code and
+the result of the decryption, can mount a Bleichenbacher oracle.
+
+We are not aware of any applications that provide a remote attacker
+an opportunity to mount an attack described in these scenarios. We consider
+the existence of such application very unlikely, and for this reason this
+CVE has been evaluated as Low severity.
+
+To avoid these attacks, when RSA PKCS#1 v1.5 Key Transport is in use, the
+invoked EVP_PKEY_decrypt() will use the implicit rejection mechanism described
+in draft-irtf-cfrg-rsa-guidance. In previous OpenSSL releases the implicit
+rejection was explicitly disabled.
+
+The implicit rejection mechanism always returns a plaintext value,
+the symmetric key. This result is deterministic for the ciphertext and the
+private key.  The length of the decryption result can happen to match the
+length of the key of the symmetric cipher that was used for the content
+encryption. When a certificate is not provided, the last RecipientInfo
+producing a key that looks valid will be used. It may cause getting garbage
+content on decryption. As a proper way to deal with this a recipient
+certificate has to be provided to identify the particular RecipientInfo for
+decryption.
+
+The FIPS modules in 4.0, 3.6, 3.5, and 3.4 are not affected by this issue, as
+CMS and S/MIME processing happens outside the OpenSSL FIPS module boundary.
+
+OpenSSL 4.0, 3.6, 3.5, 3.4 are vulnerable to this issue.
+
+OpenSSL 3.0, 1.1.1, and 1.0.2 do not implement RSA implicit rejection.
+These branches are affected by variants of Bleichenbacher/Marvin attack, but
+the proper fix would require a breaking change of RSA decryption behavior,
+which is unfeasible for stable branches.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+
+This issue was reported by Alex Gaynor (Anthropic) on 16th April 2026.
+The fix was developed by Dmitry Belyavskiy (Red Hat) and Alicja Kario (Red
+Hat) based on reporter's recommendations.
+
+Trust-Anchor Substitution via cert/issuer Typo in CMP rootCaKeyUpdate (CVE-2026-42769)
+======================================================================================
+
+Severity: Low
+
+Issue Summary: An error in the callback used to verify the certificate
+provided in a Root CA key update Certificate Management Protocol (CMP)
+message response rendered the certificate validation ineffectual, which
+could lead to escalation of credentials from the Registration Authority (RA)
+level to the root Certification Authority (root CA) level.
+
+Impact Summary: The Registration Autority could replace the root CA
+certificate for the CMP clients with an arbitrary root CA certificate.
+
+One of the parts of the Certificate Management Protocol (CMP), specified in
+RFC 9810, is Root Certification Authority (root CA) key Rollover,
+which is sent by the server in a message with type "id-it-rootCaKeyUpdate".
+As part of these messages, "newWithOld" certificate, the new root CA
+certificate signed with the old root CA key, is provided, and verifying its
+signature is crucial for transferring the trust from the old CA key to the
+new one.
+
+The "id-it-rootCaKeyUpdate" messages are expected to be processed with
+OSSL_CMP_get1_rootCaKeyUpdate(), that is expected to verify the "newWithOld"
+certificate.  A typo in the certificate chain building code led to adding
+an incorrect certificate ("newWithOld" instead of "oldRoot") to the
+certificate chain, rendering the certificate verification process ineffectual
+(only the issuer name and the algorithm OIDs were verified by other parts
+of the verification code).
+
+An attacker who already has credentials that satisfy the CMP message
+protection checks can generate a new key pair and use a crafted self-signed
+certificate in its "id-it-rootCaKeyUpdate" CMP messages which affected CMP
+clients would accept as a new trust anchor.
+
+Significant preconditions for the attack (having valid RA-level credentials)
+are the reason the issue was assigned Low severity.
+
+The FIPS modules are not affected by this issue, as the affected code is
+outside the OpenSSL FIPS module boundary.
+
+OpenSSL 4.0, 3.6, 3.5, and 3.4 are vulnerable to this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+
+OpenSSL 3.0, 1.1.1, and 1.0.2 are not affected by this issue.
+
+This issue was reported on 17th April 2026 by Alex Gaynor (Anthropic).
+
+The fix was developed by Alex Gaynor (Anthropic) and Bob Beck.
+
+FFC-DH Peer Validation Uses Attacker-Supplied q (CVE-2026-42770)
+================================================================
+
+Severity: Low
+
+Issue summary: When EVP_PKEY_derive_set_peer() is called with a DHX (X9.42)
+peer key, the peer key is not properly checked for the subgroup membership.
+
+Impact summary: A malicious peer which presents an X9.42 key carrying the
+victim's p and g parameters, a forged q = r (a small prime factor of the
+cofactor (p−1)/q_local), and a public value Y of order r can recover the
+victim's private key after a small number of key exchange attempts.
+
+When EVP_PKEY_derive_set_peer() is called with a DHX (X9.42) peer key, the
+subgroup membership check Y^q ≡ 1 (mod p) is performed using the peer's
+own q parameter, not the local key's q. The peer's domain parameters are
+then matched against the domain parameters of the private key, but the value
+of q is not compared.
+
+A malicious peer who presents an X9.42 key carrying the victim's p, g,
+a forged q = r (a small prime factor of the cofactor), and a public
+value Y of order r passes all checks. The shared secret then takes only
+r distinct values, leaking priv mod r. Repeating for each small-prime
+factor of the cofactor and combining via CRT recovers the full private
+key (Lim–Lee / small-subgroup-confinement attack).
+
+The realistic attack surface is narrow: principally CMP deployments with
+long-lived RA/CA DHX keys and bespoke enterprise or government applications
+using X9.42 DHX static keys with interactive protocols and therefore this
+issue was assigned Low severity.
+
+The FIPS modules in 4.0, 3.6, 3.5, 3.4, and 3.0 are affected by this
+issue.
+
+OpenSSL 4.0, 3.6, 3.5, 3.4, and 3.0 are vulnerable to this issue.
+
+OpenSSL 1.0.2 and 1.1.1 are not affected by this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.21.
+
+This issue was reported on 16th April 2026 by Alex Gaynor (Anthropic).
+The fix was developed by Alex Gaynor (Anthropic), Viktor Dukhovni and Norbert
+Pocs.
+
+Possible Out of Bounds Read in X509_VERIFY_PARAM_set1_email() (CVE-2026-42771)
+==============================================================================
+
+Severity: Low
+
+Issue summary: When the X509_VERIFY_PARAM_set1_email is called by an
+application to validate a crafted e-mail address, such as during S/MIME
+message validation, an out of bounds read can happen.
+
+Impact summary: This out of bounds read will not directly exfiltrate
+the data read to the attacker so the most likely result is a crash and
+a Denial of Service.
+
+An internal helper function called from X509_VERIFY_PARAM_[set|add]_email()
+used a wrong length when validating the local part of an email address.
+This could cause the 64 octet limit on the local part of an email address
+to be not enforced, or cause an out of bound read and potentially a crash.
+
+The bug is reachable via S-MIME validation with a crafted From: address
+supplied in an email message that can potentially cause a crash.
+
+No FIPS modules are affected by this issue as the affected code is outside
+the OpenSSL FIPS module boundary.
+
+OpenSSL 4.0 is vulnerable to this issue.
+
+OpenSSL 3.6, 3.5, 3.4, 3.0, 1.1.1, and 1.0.2 are not affected by this issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+
+This issue was reported by TrendAI Zero Day Initiative on 16th April 2026.
+
+The fix was developed by Bob Beck.
+
+Incorrect Tag Processing for Empty Messages in AES-GCM-SIV and AES-SIV modes (CVE-2026-45446)
+=============================================================================================
+
+Severity: Low
+
+Issue summary: The implementations of AES-SIV (RFC 5297) and AES-GCM-SIV
+(RFC 8452) mishandle the authentication of AAD (Additional Authenticated
+Data) with an empty ciphertext allowing a forgery of such messages.
+
+Impact summary: An attacker can forge empty messages with arbitrary AAD
+to the victim's application using these ciphers.
+
+AES-SIV (RFC 5297) and AES-GCM-SIV (RFC 8452) are nonce-misuse-resistant AEAD
+modes: they accept a key, nonce, optional AAD (bytes that are authenticated
+but not encrypted), and plaintext, and produces ciphertext plus a 16-byte
+tag. On decrypt, `EVP_DecryptFinal_ex()` is documented to return success only
+if the tag is verified succesfully.
+
+In OpenSSL's provider implementation of these ciphers, the expected tag is
+computed only when decryption function is invoked with non-empty data.
+If the caller supplies AAD and then calls `EVP_DecryptFinal_ex()` without
+invocation of the ciphertext update, which can happen when the received
+ciphertext length is zero, the tag is never recalculated and still holds its
+all-zeros value.
+
+When AES-GCM-SIV is used, an attacker who sends arbitrary AAD, empty
+ciphertext, and all-zeros tag passes authentication under any key they do not
+know, single-shot. When AES-SIV is used, for mounting the attack it's
+necessary for the application to reuse the decryption context without
+resetting the key.
+
+AES-SIV is implemented since OpenSSL 3.0. AES-GCM-SIV is implemented since
+OpenSSL 3.2.
+
+No protocols implemented in OpenSSL itself (TLS/CMS/PKCS7/HPKE/QUIC) support
+either AES-GCM-SIV or AES-SIV. To mount an attack, the applications must
+implement their own protocol and use the EVP interface. Also they must skip the
+ciphertext update when a message with an empty ciphertext arrives.
+
+The FIPS modules in 4.0, 3.6, 3.5, 3.4, and 3.0 are not affected by this
+issue, as these algorithms are not FIPS approved and the affected code is
+outside the OpenSSL FIPS module boundary.
+
+OpenSSL 1.0.2 and 1.1.1 are not affected by this issue.
+
+OpenSSL 4.0, 3.6, 3.5, 3.4 and 3.0 (AES-SIV mode only) are vulnerable to this
+issue.
+
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.1.
+OpenSSL 3.6 users should upgrade to OpenSSL 3.6.3.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.7.
+OpenSSL 3.4 users should upgrade to OpenSSL 3.4.6.
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.21.
+
+This issue was reported by Alex Gaynor (Anthropic) on 16th April 2026.
+The fix was developed by Dmitry Belyavskiy (Red Hat) based on reporter's
+recommendations.
+
+General Advisory Notes
+======================
+
+URL for this Security Advisory:
+https://openssl-library.org/news/secadv/20260609.txt
+
+Note: the online version of the advisory may be updated with additional
+details over time.
+
+Only currently supported releases have been analysed. OpenSSL 3.1, 3.2 and 3.3
+are out of support and have not been analysed.
+
+For details of OpenSSL severity classifications please see:
+https://openssl-library.org/policies/general/security-policy/
