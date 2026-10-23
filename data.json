@@ -10,8 +10,8 @@
     "lts": true
   },
   "4.1" : {
-    "release": "Oct 2026",
-    "eol": "Nov 2027",
+    "release": "23 Oct 2026",
+    "eol": "23 Nov 2027",
     "lts": false
   },
   "4.0" : {
