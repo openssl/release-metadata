@@ -1,0 +1,192 @@
+OpenSSL Security Advisory [17th November 2026]
+==============================================
+
+The issues listed below have been fixed in the public openssl/openssl
+repository on GitHub. Releases containing these fixes are scheduled
+for 1st December 2026.
+
+Out-of-Bounds Read in TLS 1.3 Key-Share Processing with Suite B Certificate Flag (CVE-2026-35190)
+=================================================================================================
+
+Severity: Low
+
+Issue summary: A server configured with the Suite B certificate flag through
+SSL_CTX_set_cert_flags() and with TLS 1.3 enabled may read past the end of a
+fixed group list when it processes a ClientHello whose supported_groups and
+key_share contain no Suite B group.
+
+Impact summary: A remote client can send a ClientHello that makes the server
+read past the end of a static array. The values read are never returned to the
+client, so no memory is disclosed; on builds with sanitizers or hardened
+allocators the read may crash the process, causing Denial of Service.
+
+CWE: CWE-125: Out-of-bounds Read
+
+Description: When the Suite B certificate flag is set, OpenSSL restricts the
+accepted groups to P-256 and P-384 by substituting a fixed two-element list
+for the configured group list. The tuple machinery used for key-share
+selection was not updated for this substitution: tls1_get_group_tuples() still
+returns the configured tuples, which by default describe eight groups. The
+server-side walk in tls_parse_ctos_key_share() then advances through the
+two-element list using those tuple counts without checking the cumulative
+offset against the number of groups present.
+
+Only applications that call SSL_CTX_set_cert_flags() with
+SSL_CERT_FLAG_SUITEB_128_LOS and leave TLS 1.3 enabled are affected. The
+openssl s_server -suiteB_128 option sets an X.509 verification parameter
+instead, so the stock command line server is not vulnerable. Default
+configurations do not reach this code.
+
+A client that offers only groups outside the Suite B set, such as X25519,
+forces every tuple to be walked and the read to run past the array. The bytes
+read are compared against client group IDs and never sent back, so no memory
+is disclosed. On builds with address sanitizers or hardened allocators the
+read can abort the process; in ordinary release builds it reads a few bytes of
+adjacent constant data.
+
+FIPS impact: no
+The affected code is outside the FIPS module boundary.
+
+OpenSSL 4.1, 4.0 and 3.5 are vulnerable to this issue.
+
+OpenSSL 3.0, 1.1.1 and 1.0.2 are not affected by this issue.
+
+OpenSSL 4.1 users should upgrade to OpenSSL 4.1.1.
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.4.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.10.
+
+This issue was reported on 17 August 2026 by Laurent Gaffie (secorizon.com).
+The fix has been developed by Daniel Kubec.
+
+Use-After-Free in PEM_X509_INFO_read_bio_ex() when appending to a caller-supplied stack fails (CVE-2026-107493)
+===============================================================================================================
+
+Severity: Low
+
+Issue summary: When an application passes a stack to
+PEM_X509_INFO_read_bio_ex() to add entries to, and reading fails,
+OpenSSL frees every entry in the stack, both the old ones and any new
+ones, but leaves them in the stack.
+
+Impact summary: An application that passes an existing stack to
+PEM_X509_INFO_read_bio_ex() and keeps using it after a failed read may
+use memory that was already freed. This can cause a crash or, in
+principle, memory corruption. Malformed PEM data can make the read fail,
+but only applications that pass an existing stack are affected, and
+OpenSSL itself does not do this.
+
+CWE: CWE-416: Use After Free
+
+Description: PEM_X509_INFO_read_bio_ex() reads certificates, CRLs and
+private keys from PEM data and adds them to a stack of X509_INFO
+structures. If the application passes a stack that is not NULL, the
+function adds the new entries to it and must leave the entries that are
+already there unchanged.
+
+If reading fails, the function frees every entry in the stack. This
+includes the entries that were there before the call, and the entries
+added by the call. It does not remove these entries from the stack, so
+the stack keeps pointers to freed memory. The failure can happen at any
+point, even before any entry was added. A PEM item with invalid content
+is enough.  This also happens if the stack was empty: entries added
+before the failure are freed but stay in the stack.
+
+An application that then reads or frees the stack will use memory that
+was already freed. This can crash the application or, in principle,
+corrupt memory.
+
+Only applications that pass a stack that is not NULL are affected.
+OpenSSL itself never does this. Its own callers, including the code that
+TLS uses to load CA certificates, always pass NULL. When the stack is
+NULL, the function frees only the entries that it created itself, which
+is safe. We expect that very few applications pass an existing stack. An
+attacker can make the read fail with malformed PEM data, but cannot make
+an application pass an existing stack.
+
+The same problem affects PEM_X509_INFO_read_bio(), PEM_X509_INFO_read()
+and PEM_X509_INFO_read_ex(), which use the same code. OpenSSL 1.1.1 and
+1.0.2 have only the first two of these functions.
+
+FIPS impact: no
+The affected code is outside the FIPS module boundary.
+
+OpenSSL 4.1, 4.0, 3.5, 3.0, 1.1.1 and 1.0.2 are vulnerable to this issue.
+
+OpenSSL 4.1 users should upgrade to OpenSSL 4.1.1.
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.4.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.10.
+
+Premium support customers only:
+OpenSSL 3.0 users should upgrade to OpenSSL 3.0.24.
+OpenSSL 1.1.1 users should upgrade to OpenSSL 1.1.1zk.
+OpenSSL 1.0.2 users should upgrade to OpenSSL 1.0.2zt.
+
+This issue was reported on 11 September 2026 by Filipe Casal (Trail of Bits)
+in collaboration with OpenAI.
+The fix has been developed by Viktor Dukhovni.
+
+Unbounded Memory Retention in QUIC Server for Rejected Streams (CVE-2026-124709)
+================================================================================
+
+Severity: Low
+
+Issue summary: A QUIC server that rejects a stream opened by the peer may
+retain that stream's state for the lifetime of the connection if the peer
+resets the stream before the rejection is signalled, even though the peer's
+stream credit is returned.
+
+Impact summary: A remote client that completes a QUIC handshake can repeatedly
+open and reset streams, causing server memory to grow without bound until the
+process runs out of memory and every connection on it is lost. This is a
+Denial of Service.
+
+CWE: CWE-401: Missing Release of Memory after Effective Lifetime
+
+Description: QUIC servers track each stream the peer opens. When the incoming
+stream policy rejects a stream, OpenSSL schedules a STOP_SENDING frame, marks
+the stream deleted and returns the peer's stream credit. A deleted stream is
+collected only once its receive part is fully drained, which for a rejected
+stream means the STOP_SENDING has been acknowledged. If the peer sends
+RESET_STREAM first, the reset cancels the pending STOP_SENDING, so it is never
+sent or acknowledged and the stream is never collected.
+
+The default configuration reaches this path. Once a connection has a default
+stream, meaning the application has read from or written to the connection as
+the tutorial server does, the effective incoming stream policy rejects streams
+the application does not accept. Applications that set the REJECT policy
+explicitly are affected too.
+
+Each retained stream costs about 300 bytes, and the peer's stream credit
+window paces how quickly they accumulate. A client that keeps the connection
+open and keeps opening and resetting streams grows server memory without
+bound. The severity is Low because growth is slow, needs a long-lived
+connection, and causes no memory corruption or disclosure.
+
+FIPS impact: no
+The affected code is outside the FIPS module boundary.
+
+OpenSSL 4.1, 4.0 and 3.5 are vulnerable to this issue.
+
+OpenSSL 3.0, 1.1.1 and 1.0.2 are not affected by this issue.
+
+OpenSSL 4.1 users should upgrade to OpenSSL 4.1.1.
+OpenSSL 4.0 users should upgrade to OpenSSL 4.0.4.
+OpenSSL 3.5 users should upgrade to OpenSSL 3.5.10.
+
+This issue was reported on 6 November 2026 by Bhabani Sankar Das.
+The fix has been developed by Bhabani Sankar Das.
+
+General Advisory Notes
+======================
+
+URL for this Security Advisory:
+https://openssl-library.org/news/secadv/20261117.txt
+
+Note: the online version of the advisory may be updated with additional
+details over time.
+
+Only currently supported releases have been analysed. OpenSSL 3.1, 3.2, 3.3,
+3.4, and 3.6 are out of support and have not been analysed.
+
+For details of OpenSSL severity classifications please see:
+https://openssl-library.org/policies/general/security-policy/
