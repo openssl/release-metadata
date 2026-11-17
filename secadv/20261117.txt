@@ -58,7 +58,7 @@ OpenSSL 3.5 users should upgrade to OpenSSL 3.5.10.
 This issue was reported on 17 August 2026 by Laurent Gaffie (secorizon.com).
 The fix has been developed by Daniel Kubec.
 
-Use-After-Free in PEM_X509_INFO_read_bio_ex() when appending to a caller-supplied stack fails (CVE-2026-107493)
+Use-After-Free in PEM_X509_INFO_read_bio_ex() When Appending to a Caller-Supplied Stack Fails (CVE-2026-107493)
 ===============================================================================================================
 
 Severity: Low
