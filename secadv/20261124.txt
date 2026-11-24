@@ -193,7 +193,7 @@ OpenSSL 4.0 users should upgrade to OpenSSL 4.0.4.
 OpenSSL 3.5 users should upgrade to OpenSSL 3.5.10.
 
 This issue was reported on 21 October 2026 by Duc Anh Luu (University of
-Melbourne) and on 17 November 2026 by Arpe.
+Melbourne) and on 17 November 2026 by Jiwoo Kim (Arpe).
 The fix has been developed by Duc Anh Luu (University of Melbourne).
 
 General Advisory Notes
